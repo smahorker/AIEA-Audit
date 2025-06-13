@@ -1,4 +1,5 @@
 from production import AND, OR, NOT, IF, THEN, match, populate, simplify, forward_chain
+from data import poker_data, simpsons_data, black_data, zookeeper_rules
 
 def transitive_rule():
     rule = IF(
@@ -26,7 +27,7 @@ def backchain_to_goal_tree(rules, hypothesis):
     alternatives = [hypothesis]
     
     for rule in rules:
-        consequent = rule.action()[0] if rule.action() else None
+        consequent = rule.consequent()
         bindings = match(consequent, hypothesis)
         if bindings is not None:
             if isinstance(rule.antecedent(), str):
@@ -47,49 +48,13 @@ def backchain_to_goal_tree(rules, hypothesis):
     
     return simplify(OR(alternatives))
 
-poker_data = [
-    'two-pair beats pair',
-    'three-of-a-kind beats two-pair',
-    'straight beats three-of-a-kind',
-    'flush beats straight',
-    'full-house beats flush',
-    'straight-flush beats full-house'
-]
-
-simpsons_data = [
-    'person bart', 'person lisa', 'person maggie', 
-    'person marge', 'person homer', 'person abe', 'person mona',
-    'parent marge bart', 'parent marge lisa', 'parent marge maggie',
-    'parent homer bart', 'parent homer lisa', 'parent homer maggie',
-    'parent abe homer', 'parent mona homer'
-]
-
-black_family_data = [
-    'person sirius', 'person regulus', 'person bellatrix', 'person andromeda', 
-    'person narcissa', 'person nymphadora', 'person draco',
-    'person orion', 'person walburga', 'person cygnus', 'person druella',
-    'parent orion sirius', 'parent orion regulus',
-    'parent walburga sirius', 'parent walburga regulus', 
-    'parent cygnus bellatrix', 'parent cygnus andromeda', 'parent cygnus narcissa',
-    'parent druella bellatrix', 'parent druella andromeda', 'parent druella narcissa',
-    'parent andromeda nymphadora', 'parent narcissa draco'
-]
-
-zookeeper_rules = [
-    IF('(?x) is a bird', THEN('(?x) is a vertebrate')),
-    IF('(?x) has feathers', THEN('(?x) is a bird')),
-    IF(AND('(?x) flies', '(?x) lays eggs'), THEN('(?x) is a bird')),
-    IF(AND('(?x) is a bird', '(?x) does not fly', '(?x) swims', '(?x) has black and white color'), 
-       THEN('(?x) is a penguin'))
-]
-
 poker_results = forward_chain([transitive_rule()], poker_data)
 print(len(poker_results))
 
 simpsons_results = forward_chain(family_rules(), simpsons_data)
 print(len(simpsons_results))
 
-black_results = forward_chain(family_rules(), black_family_data)
+black_results = forward_chain(family_rules(), black_data)
 cousin_relationships = [r for r in black_results if 'cousin' in r]
 print(len(cousin_relationships))
 
